@@ -51,7 +51,14 @@ export default function ExpenseForm() {
         return
       }
       setError('')
-      dispatch({type: 'add-expense', payload: {expense}})
+
+      //añadimos o modificamos gasto
+      if(state.editingId){
+        dispatch({type: 'update-expense', payload: {expense: {id: state.editingId, ...expense}}}) //el expense a editar será el mismo (...expense(todavía sin id)) + el id
+      } else {
+        dispatch({type: 'add-expense', payload: {expense}})
+      }
+      
 
       //reiniciamos el modal (state)
       setExpense({
@@ -65,7 +72,7 @@ export default function ExpenseForm() {
     return (
       <form className="space-y-5" onSubmit={handleSubmit}>
         <legend className="uppercase text-center text-2xl font-black border-b-4 border-blue-500 py-2">
-          Nuevo gasto</legend>
+          { state.editingId? 'Editar gasto' : 'Nuevo gasto' } </legend>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <div className="flex flex-col gap-2">
@@ -137,7 +144,7 @@ export default function ExpenseForm() {
           <input
             type="submit"
             className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg"
-            value={'Registrar gasto'}
+            value={state.editingId? 'Guardar cambios' : 'Registrar gasto'}
           ></input>
       </form>
   )
