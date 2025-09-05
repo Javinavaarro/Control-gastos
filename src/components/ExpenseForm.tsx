@@ -18,12 +18,15 @@ export default function ExpenseForm() {
     })
 
     const [error, setError] = useState('')
-    const {dispatch, state} = useBudget()
+    const {dispatch, state, totalAvailable} = useBudget()
+
+    const [previousAmount, setPreviousAmount] = useState(0)
 
     useEffect(()=> {
       if(state.editingId){
         const editingExpense = state.expenses.filter( currentExpense => currentExpense.id === state.editingId)[0]
         setExpense(editingExpense)
+        setPreviousAmount(editingExpense.amount)
       }
     }, [state.editingId])
 
@@ -50,7 +53,13 @@ export default function ExpenseForm() {
         setError('Todos los campos son obligatorios')
         return
       }
-      setError('')
+      
+
+      //comprobamos no pasarnos del presupuesto total // cantidad actual - cantidad anterior no debe sobrepasar el presupuesto, ya que anterior siempre habrá si estamos editando, ahí es donde se setea 
+      if((expense.amount - previousAmount) > totalAvailable){
+        setError('Presupuesto sobrepasado')
+        return
+      }
 
       //añadimos o modificamos gasto
       if(state.editingId){
@@ -67,6 +76,9 @@ export default function ExpenseForm() {
         category: '',
         date: new Date()
       })
+
+      setError('')
+      setPreviousAmount(0)
     }
 
     return (

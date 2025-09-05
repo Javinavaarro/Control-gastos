@@ -1,4 +1,4 @@
-import type { DraftExpense, Expense } from "../types"
+import type { Category, DraftExpense, Expense } from "../types"
 import { v4 as uuidv4 } from "uuid"
 
 
@@ -9,20 +9,35 @@ export type BudgetActions =
     {type: 'add-expense', payload: {expense: DraftExpense}} |
     {type: 'remove-expense', payload: {id: Expense['id']}} |
     {type: 'get-expense-by-id', payload: {id: Expense['id']}} |
-    {type: 'update-expense', payload: {expense: Expense}}  
+    {type: 'update-expense', payload: {expense: Expense}} |
+    {type: 'restart-app'}  |
+    {type: 'add-filter-category', payload: {id: Category['id']}}  
+
 
 export type BudgetState ={
     budget: number,
     modal: boolean,
     expenses: Expense[],
-    editingId: Expense['id']
+    editingId: Expense['id'],
+    currentCategory: Category['id']
+}
+
+const initialBudget = () : number => {  //función para obtener el budget desde el local storage, sino hay a 0
+    const localStorageBudget = localStorage.getItem('budget')
+    return localStorageBudget ? +localStorageBudget : 0
+}
+
+const initialExpenses = () : Expense[] =>  { //función para obtener los expenses desde el local storage, sino hay a []
+    const localStorageExpenses = localStorage.getItem('expenses')
+    return localStorageExpenses ? JSON.parse(localStorageExpenses) : []
 }
 
 export const initialState : BudgetState = {
-    budget: 0,
+    budget: initialBudget(),
     modal: false,
-    expenses: [],
-    editingId: ''
+    expenses: initialExpenses(),
+    editingId: '',
+    currentCategory: ''
 }
 
 const createExpense = (draftExpense: DraftExpense) : Expense => { //Input como DraftExpense, output como Expense (DraftExpense + id)
@@ -93,6 +108,23 @@ export const budgetReducer = (
             expenses: state.expenses.map( expense => expense.id === action.payload.expense.id ? action.payload.expense : expense),
             modal: false,
             editingId: ''
+        }
+    }
+
+    if(action.type==='restart-app'){
+
+        return{
+            ...state,
+            budget: 0,
+            expenses: []
+        }
+    }
+
+    if(action.type==='add-filter-category'){
+
+        return{
+            ...state,
+            currentCategory: action.payload.id
         }
     }
 
